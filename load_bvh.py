@@ -1,5 +1,6 @@
 import re
 import xlwt
+import os
 
 
 def identifier(scanner, token):
@@ -143,7 +144,7 @@ def parse_hierarchy(bvh):
     root_bone["channels"] = channels
     skeleton[root_name] = root_bone
     push_bone_context(root_name)
-    print "Root ", root_bone
+    # print "Root ", root_bone
 
     while bvh[current_token][1] == "JOINT":
         current_token = parse_joint(bvh, current_token)
@@ -209,6 +210,17 @@ def convert_list3(d):
 def convert_bvh(file_bvh):
 
     global current_token
+    global current_token
+    global skeleton
+    global bone_context
+    global motion_channels
+    global motions
+
+    current_token = 0
+    skeleton = {}
+    bone_context = []
+    motion_channels = []
+    motions = []
 
     """ -------------- load the bvh file ----------- """
     bvh_file = open(file_bvh + '.bvh', "r")
@@ -247,14 +259,9 @@ def convert_bvh(file_bvh):
         for j in xrange(value_set[i].__len__()):
             sheet2.write(i + 2, j + 2, value_set[i][j][2])
 
-    book_out.save(bvh_file_name + '.xls')
+    book_out.save(file_bvh + '.xls')
 
 
-current_token = 0
-skeleton = {}
-bone_context = []
-motion_channels = []
-motions = []
 reserved = ["HIERARCHY", "ROOT", "OFFSET", "CHANNELS", "MOTION"]
 channel_names = ["Xposition", "Yposition", "Zposition",  "Zrotation", "Xrotation",  "Yrotation"]
 set1_title = ['Bone', 'Channel1', 'Channel2', 'Channel3', 'Offset1', 'Offset2', 'Offset3']
@@ -268,11 +275,16 @@ scanner = re.Scanner([
     (r"\s+", None),
     ])
 
+bvh_path = 'bvh'
+
 if __name__ == "__main__":
 
-    bvh_file_name = "2017-02-23_20-33-44"
-    # bvh_file_name = "2017-04-01_18-35-21"
-    # bvh_file_name = "2017-04-01_20-56-08"
-    convert_bvh(bvh_file_name)
+    for file_name in os.listdir(bvh_path):
+        if file_name[-3:].upper() == 'BVH':
+            print 'Convert ', bvh_path + '/' + file_name
+            convert_bvh(bvh_path + '/' + file_name[:-4])
+
+    # bvh_file_name = "2017-02-23_20-33-44"
+    # convert_bvh(bvh_file_name)
 
     print "Complete successfully"
