@@ -1,4 +1,5 @@
 import re
+import xlwt
 
 
 def identifier(scanner, token):
@@ -181,30 +182,82 @@ def parse_motion(bvh):
     frame_time = 0.0
     motions = [()] * frame_count
 
+    frame_time_list = []
+    value_list = []
     for i in range(0, frame_count):
-        print "Parsing frame ", i
+        # print "Parsing frame ", i
         channel_values = []
         for channel in motion_channels:
             channel_values.append((channel[0], channel[1], float(bvh[current_token][1])))
             current_token += 1
         motions[i] = (frame_time, channel_values)
-        print motions[i]
+        # print motions[i]
         frame_time += frame_rate
+        frame_time_list.append(frame_time)
+        value_list.append(channel_values)
+
+    return frame_time_list, value_list
+
+
+def convert_list3(d):
+    if d:
+        return d
+    else:
+        return ['', '', '']
+
+
+def convert_bvh(file_bvh):
+
+    global current_token
+
+    """ -------------- load the bvh file ----------- """
+    bvh_file = open(file_bvh + '.bvh', "r")
+    bvh = bvh_file.read()
+    bvh_file.close()
+    tokens, remainder = scanner.scan(bvh)
+    parse_hierarchy(tokens)
+
+    """ ---------------- parsing bvh file ----------- """
+    set1 = [set1_title]
+    for (name, bone) in skeleton.iteritems():
+        set1.append([name] + convert_list3(bone["channels"][:3]) + bone["offsets"])
+
+    """ ----------------- write to excel ------------ """
+    book_out = xlwt.Workbook(encoding="utf-8")
+    sheet1 = book_out.add_sheet("sheet1")
+    sheet2 = book_out.add_sheet("sheet2")
+
+    current_token += 1
+    frame_time_set, value_set = parse_motion(tokens)
+
+    for i in xrange(set1.__len__()):                # write to first sheet
+        for j in xrange(set1[i].__len__()):
+            sheet1.write(i, j, set1[i][j])
+
+    sheet2.write(0, 0, 'Frame time')                # write the second sheet header
+    sheet2.write(0, 1, 'Channel1')
+    sheet2.write(1, 1, 'Channel2')
+
+    for j in xrange(value_set[0].__len__()):
+        sheet2.write(0, j + 2, value_set[0][j][0])
+        sheet2.write(1, j + 2, value_set[0][j][1])
+
+    for i in xrange(frame_time_set.__len__()):      # write the second sheet
+        sheet2.write(i + 2, 0, frame_time_set[i])
+        for j in xrange(value_set[i].__len__()):
+            sheet2.write(i + 2, j + 2, value_set[i][j][2])
+
+    book_out.save(bvh_file_name + '.xls')
 
 
 current_token = 0
-
 skeleton = {}
 bone_context = []
 motion_channels = []
 motions = []
-
-bvh_file = "2017-02-23_20-33-44.bvh"
-
-
 reserved = ["HIERARCHY", "ROOT", "OFFSET", "CHANNELS", "MOTION"]
 channel_names = ["Xposition", "Yposition", "Zposition",  "Zrotation", "Xrotation",  "Yrotation"]
-
+set1_title = ['Bone', 'Channel1', 'Channel2', 'Channel3', 'Offset1', 'Offset2', 'Offset3']
 
 scanner = re.Scanner([
     (r"[a-zA-Z_]\w*", identifier),
@@ -217,15 +270,9 @@ scanner = re.Scanner([
 
 if __name__ == "__main__":
 
-    bvh_file = open(bvh_file, "r")
-    bvh = bvh_file.read()
-    bvh_file.close()
-    tokens, remainder = scanner.scan(bvh)
-    parse_hierarchy(tokens)
-    for (name, bone) in skeleton.iteritems():
-        print "Bone " + name
-        if bone.has_key("channels"):
-            print "Channels ", bone["channels"]
-        print "Offsets ", bone["offsets"]
-    current_token += 1
-    parse_motion(tokens)
+    bvh_file_name = "2017-02-23_20-33-44"
+    # bvh_file_name = "2017-04-01_18-35-21"
+    # bvh_file_name = "2017-04-01_20-56-08"
+    convert_bvh(bvh_file_name)
+
+    print "Complete successfully"
