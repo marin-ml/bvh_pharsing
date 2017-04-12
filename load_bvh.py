@@ -236,8 +236,8 @@ def convert_bvh(file_bvh):
 
     """ ----------------- write to excel ------------ """
     book_out = xlwt.Workbook(encoding="utf-8")
-    sheet1 = book_out.add_sheet("sheet1")
-    sheet2 = book_out.add_sheet("sheet2")
+    sheet1 = book_out.add_sheet("offset")
+    sheet2 = book_out.add_sheet("motion")
 
     current_token += 1
     frame_time_set, value_set = parse_motion(tokens)
