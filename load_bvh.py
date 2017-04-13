@@ -241,10 +241,7 @@ def convert_bvh(file_bvh):
 
     current_token += 1
     frame_time_set, value_set = parse_motion(tokens)
-
-    for i in xrange(set1.__len__()):                # write to first sheet
-        for j in xrange(set1[i].__len__()):
-            sheet1.write(i, j, set1[i][j])
+    header_set = ['Bone']
 
     sheet2.write(0, 0, 'Frame time')                # write the second sheet header
     sheet2.write(0, 1, 'Channel1')
@@ -253,11 +250,22 @@ def convert_bvh(file_bvh):
     for j in xrange(value_set[0].__len__()):
         sheet2.write(0, j + 2, value_set[0][j][0])
         sheet2.write(1, j + 2, value_set[0][j][1])
+        if j % 3 == 0:
+            header_set.append(value_set[0][j][0])
 
     for i in xrange(frame_time_set.__len__()):      # write the second sheet
         sheet2.write(i + 2, 0, frame_time_set[i])
         for j in xrange(value_set[i].__len__()):
             sheet2.write(i + 2, j + 2, value_set[i][j][2])
+
+    row_ind = 0
+    for header in header_set:
+        for i in xrange(set1.__len__()):                # write to first sheet
+            if header == set1[i][0]:
+                for j in xrange(set1[i].__len__()):
+                    sheet1.write(row_ind, j, set1[i][j])
+                row_ind += 1
+                break
 
     book_out.save(file_bvh + '.xls')
 
@@ -284,7 +292,7 @@ if __name__ == "__main__":
             print 'Convert ', bvh_path + '/' + file_name
             convert_bvh(bvh_path + '/' + file_name[:-4])
 
-    # bvh_file_name = "2017-02-23_20-33-44"
+    # bvh_file_name = "bvh/2017-02-23_20-33-44"
     # convert_bvh(bvh_file_name)
 
     print "Complete successfully"
