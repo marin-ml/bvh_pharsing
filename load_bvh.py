@@ -84,7 +84,7 @@ def parse_joint(bvh, token_index):
     joint = new_bone(get_bone_context(), joint_name)
 
     if bvh[token_index][0] != "OPEN_BRACE":
-        print "Was expecting brace, got ", bvh[token_index]
+        print("Was expecting brace, got ", bvh[token_index])
         return None
 
     token_index += 1
@@ -108,7 +108,7 @@ def parse_joint(bvh, token_index):
     if (bvh[token_index][0]) == "CLOSE_BRACE":
         return token_index + 1
 
-    print "Unexpected token ", bvh[token_index]
+    print("Unexpected token ", bvh[token_index])
 
 
 def parse_hierarchy(bvh):
@@ -144,7 +144,7 @@ def parse_hierarchy(bvh):
     root_bone["channels"] = channels
     skeleton[root_name] = root_bone
     push_bone_context(root_name)
-    # print "Root ", root_bone
+    # print("Root ", root_bone)
 
     while bvh[current_token][1] == "JOINT":
         current_token = parse_joint(bvh, current_token)
@@ -154,11 +154,11 @@ def parse_motion(bvh):
     global current_token
 
     if bvh[current_token][0] != "IDENT":
-        print "Unexpected text"
+        print("Unexpected text")
         return None
 
     if bvh[current_token][1] != "MOTION":
-        print "No motion section"
+        print("No motion section")
         return None
 
     current_token += 1
@@ -186,13 +186,13 @@ def parse_motion(bvh):
     frame_time_list = []
     value_list = []
     for i in range(0, frame_count):
-        # print "Parsing frame ", i
+        # print("Parsing frame ", i)
         channel_values = []
         for channel in motion_channels:
             channel_values.append((channel[0], channel[1], float(bvh[current_token][1])))
             current_token += 1
         motions[i] = (frame_time, channel_values)
-        # print motions[i]
+        # print(motions[i])
         frame_time += frame_rate
         frame_time_list.append(frame_time)
         value_list.append(channel_values)
@@ -289,10 +289,10 @@ if __name__ == "__main__":
 
     for file_name in os.listdir(bvh_path):
         if file_name[-3:].upper() == 'BVH':
-            print 'Convert ', bvh_path + '/' + file_name
+            print('Convert ', bvh_path + '/' + file_name)
             convert_bvh(bvh_path + '/' + file_name[:-4])
 
     # bvh_file_name = "bvh/2017-02-23_20-33-44"
     # convert_bvh(bvh_file_name)
 
-    print "Complete successfully"
+    print("Complete successfully")
